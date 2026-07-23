@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
+const productRoutes = require("./routes/productRoutes");
 const app = express();
 
 // Middleware
@@ -24,4 +25,5 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/products", productRoutes);
 module.exports = app;

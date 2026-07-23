@@ -109,7 +109,28 @@ const loginUser = async (req, res) => {
   }
 };
 
+// ================= GET MY PROFILE =================
+
+const getMyProfile = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      user: req.user,
+    });
+  } catch (error) {
+    console.error("Get Profile Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ================= EXPORTS =================
+
 module.exports = {
   registerUser,
   loginUser,
+  getMyProfile,
 };
