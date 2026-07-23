@@ -1,7 +1,9 @@
 const Product = require("../models/Product");
+const User = require("../models/User")
 const mongoose = require("mongoose");
 const cloudinary = require("../config/cloudinary");
 const uploadToCloudinary = require("../utils/uploadToCloudinary");
+const { removeAllListeners } = require("../models/User");
 
 
 // create product lesson 8
@@ -332,6 +334,178 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// Lesson 16 – Product Reviews & Ratings (Production Ready)
+const createProductReview = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const { rating, comment } = req.body;
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    const alreadyReviewed =
+      product.reviews.find(
+
+        review =>
+          review.user.toString() ===
+          req.user._id.toString()
+
+      );
+
+    if (alreadyReviewed) {
+      return res.status(400).json({
+        success: false,
+        message: "Product already reviewed",
+      });
+    }
+
+    const review = {
+
+      user: req.user._id,
+
+      name: req.user.name,
+
+      rating: Number(rating),
+
+      comment,
+
+    };
+
+    product.reviews.push(review);
+
+    product.numReviews =
+      product.reviews.length;
+
+    product.rating =
+      product.reviews.reduce(
+        (acc, item) =>
+          acc + item.rating,
+        0
+      ) / product.reviews.length;
+
+    await product.save();
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Review added successfully",
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
+
+// addToWishlist Lesson 17 – Wishlist API (Production Ready)
+const addToWishlist = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const product =
+      await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $addToSet: {
+          wishlist: id,
+        },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Product added to wishlist",
+    });
+
+  } catch (error) {
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
+
+// removeFromWishlist Lesson 17 – Wishlist API (Production Ready)
+const removeFromWishlist =async (req,res)=>{
+
+const {id}=req.params;
+
+await User.findByIdAndUpdate(
+
+req.user._id,
+
+{
+
+$pull:{
+
+wishlist:id
+
+}
+
+}
+
+);
+
+return res.status(200).json({
+
+success:true,
+
+message:"Removed from wishlist"
+
+});
+
+};
+
+const getWishlist =async(req,res)=>{
+
+const user=
+
+await User.findById(req.user._id).populate({
+path:"wishlist",
+match:{
+isActive:true
+}
+});
+
+return res.status(200).json({
+
+success:true,
+
+wishlist:user.wishlist
+
+});
+
+};
+
+
 module.exports = {
-  createProduct, getProducts , getProductById , updateProduct , deleteProduct
+  createProduct, getProducts , getProductById , updateProduct , deleteProduct , createProductReview ,addToWishlist , removeFromWishlist , getWishlist
 };
