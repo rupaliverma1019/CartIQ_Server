@@ -1,6 +1,68 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+
+
+const addressSchema = new mongoose.Schema(
+  {
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+    },
+
+    addressLine1: {
+      type: String,
+      required: true,
+    },
+
+    addressLine2: {
+      type: String,
+      default: "",
+    },
+
+    city: {
+      type: String,
+      required: true,
+    },
+
+    state: {
+      type: String,
+      required: true,
+    },
+
+    country: {
+      type: String,
+      default: "India",
+    },
+
+    postalCode: {
+      type: String,
+      required: true,
+    },
+
+    addressType: {
+      type: String,
+      enum: ["Home", "Office", "Other"],
+      default: "Home",
+    },
+
+    isDefault: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -16,6 +78,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    addresses: [addressSchema],
 
     password: {
       type: String,
@@ -61,6 +124,8 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+
+
 // Hash password before saving
 userSchema.pre("save", async function (next) {
   try {
@@ -81,5 +146,8 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+
+
 
 module.exports = mongoose.model("User", userSchema);

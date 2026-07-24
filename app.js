@@ -6,6 +6,9 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
+const cartRoutes =require("./routes/cartRoutes");
+const addressRoutes =require("./routes/addressRoutes");
+const orderRoutes = require("./routes/orderRoutes")
 const app = express();
 
 // Middleware
@@ -26,4 +29,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/addresses",addressRoutes);
+app.use("/api/v1/orders", orderRoutes);
+
 module.exports = app;
