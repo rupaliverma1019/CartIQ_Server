@@ -96,23 +96,28 @@ if (req.files?.length) {
 // Get All Products API (Search + Filter + Sort + Pagination)  lesson 9
 const getProducts = async (req, res) => {
   try {
+
     const {
-      keyword,
+      search,
       category,
+      brand,
       minPrice,
       maxPrice,
-      sort,
+      rating,
+      inStock,
+      featured,
       page = 1,
       limit = 10,
+      sort = "newest",
     } = req.query;
 
     const filter = {
       isActive: true,
     };
 
-    if (keyword) {
+    if (search) {
       filter.title = {
-        $regex: keyword,
+        $regex: search,
         $options: "i",
       };
     }
@@ -121,65 +126,128 @@ const getProducts = async (req, res) => {
       filter.category = category;
     }
 
+    if (brand) {
+      filter.brand = brand;
+    }
+
     if (minPrice || maxPrice) {
+
       filter.price = {};
 
-      if (minPrice) {
-        filter.price.$gte = Number(minPrice);
-      }
+      if (minPrice)
+        filter.price.$gte =
+          Number(minPrice);
 
-      if (maxPrice) {
-        filter.price.$lte = Number(maxPrice);
-      }
+      if (maxPrice)
+        filter.price.$lte =
+          Number(maxPrice);
+
     }
 
-    let sortOption = { createdAt: -1 };
+    if (rating) {
 
-    if (sort) {
-      switch (sort) {
-        case "price":
-          sortOption = { price: 1 };
-          break;
+      filter.rating = {
 
-        case "-price":
-          sortOption = { price: -1 };
-          break;
+        $gte: Number(rating),
 
-        case "rating":
-          sortOption = { rating: -1 };
-          break;
+      };
 
-        case "newest":
-          sortOption = { createdAt: -1 };
-          break;
-      }
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
+    if (inStock === "true") {
 
-    const products = await Product.find(filter)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(Number(limit))
-      .populate("createdBy", "name email");
+      filter.stock = {
 
-    const totalProducts = await Product.countDocuments(filter);
+        $gt: 0,
 
-    res.status(200).json({
+      };
+
+    }
+
+    if (featured === "true") {
+
+      filter.featured = true;
+
+    }
+
+    let sortOption = {};
+
+    switch (sort) {
+
+      case "priceAsc":
+        sortOption = {
+          price: 1,
+        };
+        break;
+
+      case "priceDesc":
+        sortOption = {
+          price: -1,
+        };
+        break;
+
+      case "rating":
+        sortOption = {
+          rating: -1,
+        };
+        break;
+
+      case "popular":
+        sortOption = {
+          numReviews: -1,
+        };
+        break;
+
+      default:
+        sortOption = {
+          createdAt: -1,
+        };
+    }
+
+    const pageNumber =
+      Number(page);
+
+    const pageSize =
+      Number(limit);
+
+    const skip =
+      (pageNumber - 1) *
+      pageSize;
+
+    const products =
+      await Product.find(filter)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(pageSize);
+
+    const totalProducts =
+      await Product.countDocuments(
+        filter
+      );
+
+    return res.status(200).json({
       success: true,
-      count: products.length,
+
+      page: pageNumber,
+
+      pages: Math.ceil(
+        totalProducts /
+          pageSize
+      ),
+
       totalProducts,
-      currentPage: Number(page),
-      totalPages: Math.ceil(totalProducts / Number(limit)),
+
       products,
     });
-  } catch (error) {
-    console.error("Get Products Error:", error);
 
-    res.status(500).json({
+  } catch (error) {
+
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message:
+        error.message,
     });
+
   }
 };
 

@@ -9,6 +9,7 @@ const productRoutes = require("./routes/productRoutes");
 const cartRoutes =require("./routes/cartRoutes");
 const addressRoutes =require("./routes/addressRoutes");
 const orderRoutes = require("./routes/orderRoutes")
+const adminRoutes =require("./routes/adminRoutes");
 const app = express();
 
 // Middleware
@@ -32,5 +33,6 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/addresses",addressRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/admin",adminRoutes);
 
 module.exports = app;
