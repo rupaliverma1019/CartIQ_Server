@@ -95,78 +95,58 @@ if (req.files?.length) {
  
 // Get All Products API (Search + Filter + Sort + Pagination)  lesson 9
 const getProducts = async (req, res) => {
+
   try {
 
     const {
-      search,
+      keyword,
       category,
       brand,
       minPrice,
       maxPrice,
-      rating,
-      inStock,
-      featured,
+      sort,
       page = 1,
-      limit = 10,
-      sort = "newest",
+      limit = 8,
     } = req.query;
 
-    const filter = {
-      isActive: true,
-    };
+    const query = {
+  isActive: true,
+};
 
-    if (search) {
-      filter.title = {
-        $regex: search,
+    // Search
+    if (keyword) {
+
+      query.title = {
+        $regex: keyword,
         $options: "i",
       };
+
     }
 
+    // Category
     if (category) {
-      filter.category = category;
+
+      query.category = category;
+
     }
 
+    // Brand
     if (brand) {
-      filter.brand = brand;
+
+      query.brand = brand;
+
     }
 
+    // Price
     if (minPrice || maxPrice) {
 
-      filter.price = {};
+      query.price = {};
 
       if (minPrice)
-        filter.price.$gte =
-          Number(minPrice);
+        query.price.$gte = Number(minPrice);
 
       if (maxPrice)
-        filter.price.$lte =
-          Number(maxPrice);
-
-    }
-
-    if (rating) {
-
-      filter.rating = {
-
-        $gte: Number(rating),
-
-      };
-
-    }
-
-    if (inStock === "true") {
-
-      filter.stock = {
-
-        $gt: 0,
-
-      };
-
-    }
-
-    if (featured === "true") {
-
-      filter.featured = true;
+        query.price.$lte = Number(maxPrice);
 
     }
 
@@ -174,81 +154,64 @@ const getProducts = async (req, res) => {
 
     switch (sort) {
 
-      case "priceAsc":
-        sortOption = {
-          price: 1,
-        };
+      case "priceLow":
+
+        sortOption.price = 1;
         break;
 
-      case "priceDesc":
-        sortOption = {
-          price: -1,
-        };
+      case "priceHigh":
+
+        sortOption.price = -1;
         break;
 
-      case "rating":
-        sortOption = {
-          rating: -1,
-        };
-        break;
+      case "newest":
 
-      case "popular":
-        sortOption = {
-          numReviews: -1,
-        };
+        sortOption.createdAt = -1;
         break;
 
       default:
-        sortOption = {
-          createdAt: -1,
-        };
+
+        sortOption.createdAt = -1;
+
     }
 
-    const pageNumber =
-      Number(page);
-
-    const pageSize =
-      Number(limit);
-
-    const skip =
-      (pageNumber - 1) *
-      pageSize;
+    const totalProducts =
+      await Product.countDocuments(query);
 
     const products =
-      await Product.find(filter)
+      await Product.find(query)
         .sort(sortOption)
-        .skip(skip)
-        .limit(pageSize);
+        .skip((page - 1) * limit)
+        .limit(Number(limit));
 
-    const totalProducts =
-      await Product.countDocuments(
-        filter
-      );
+    res.status(200).json({
 
-    return res.status(200).json({
       success: true,
-
-      page: pageNumber,
-
-      pages: Math.ceil(
-        totalProducts /
-          pageSize
-      ),
 
       totalProducts,
 
+      totalPages: Math.ceil(
+        totalProducts / limit
+      ),
+
+      currentPage: Number(page),
+
       products,
+
     });
 
   } catch (error) {
 
-    return res.status(500).json({
+    res.status(500).json({
+
       success: false,
-      message:
-        error.message,
+
+      message: error.message,
+
     });
 
   }
+
 };
 
 // Get Single Product API lesson 10
@@ -573,7 +536,47 @@ wishlist:user.wishlist
 
 };
 
+// Restore Product
+
+const restoreProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Product ID",
+      });
+    }
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product.isActive = true;
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Product restored successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
-  createProduct, getProducts , getProductById , updateProduct , deleteProduct , createProductReview ,addToWishlist , removeFromWishlist , getWishlist
+  createProduct, getProducts , getProductById , updateProduct , deleteProduct , createProductReview ,addToWishlist , removeFromWishlist , getWishlist ,restoreProduct
 };

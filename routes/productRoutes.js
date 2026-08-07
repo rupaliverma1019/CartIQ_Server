@@ -2,7 +2,7 @@ const express = require("express");
 const upload = require("../middleware/upload");
 const router = express.Router();
 
-const { createProduct , getProducts , getProductById , updateProduct , deleteProduct , createProductReview , addToWishlist, removeFromWishlist, getWishlist} = require("../controllers/productController");
+const { createProduct , getProducts , getProductById , updateProduct , deleteProduct , createProductReview , addToWishlist, removeFromWishlist, getWishlist, restoreProduct} = require("../controllers/productController");
 
 const {
   protect,
@@ -20,4 +20,10 @@ router.post("/wishlist/:id",protect, addToWishlist);
 router.delete("/wishlist/:id", protect, removeFromWishlist);
 router.get("/wishlist",protect,getWishlist);
 router.get("/:id", getProductById);
+router.put(
+  "/restore/:id",
+  protect,
+  authorize("admin"),
+  restoreProduct
+);
 module.exports = router;

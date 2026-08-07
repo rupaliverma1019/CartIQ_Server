@@ -27,12 +27,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    user: {
+     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     items: [orderItemSchema],
 
     shippingAddress: {
@@ -85,3 +84,5 @@ const orderSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Order", orderSchema);
+
+
