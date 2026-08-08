@@ -67,7 +67,7 @@ const removeWishList = async(req, res)=>{
     try {
         await Wishlist.findOneAndDelete({
              user: req.user._id,
-            product: req.params.productId,
+            product: req.params.productID,
         })
         res.json({
       success: true,
