@@ -2,8 +2,24 @@ const express = require("express");
 
 const router = express.Router();
 
-const {  getRecommendations} = require("../controllers/recommendationController");
+const {
+  getRecommendations,
+  getPersonalizedRecommendations,
+} = require("../controllers/recommendationController");
 
-router.get("/:productId", getRecommendations);
+const { protect } = require("../middleware/authMiddleware");
+
+// Personalized recommendations
+router.get(
+  "/personalized",
+  protect,
+  getPersonalizedRecommendations
+);
+
+// Product-specific recommendations
+router.get(
+  "/:productId",
+  getRecommendations
+);
 
 module.exports = router;

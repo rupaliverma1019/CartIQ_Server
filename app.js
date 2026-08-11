@@ -41,15 +41,19 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
-app.use("/api/v1/addresses",addressRoutes);
+app.use("/api/v1/addresses", addressRoutes);
 app.use("/api/v1/orders", orderRoutes);
-app.use("/api/v1/admin",adminRoutes);
+app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/ai", aiRoutes);
-app.use( "/api/v1/recommendations/personal", personalRecommendationRoutes);
-app.use("/api/v1/recommendations",recommendationRoutes);
-app.use(  "/api/v1/related-products", relatedProductRoutes);
-app.use("/api/v1/history" , historyRoutes)
-app.use("/api/v1/customers-also-bought",customerRecommendationRoutes);
-app.use( "/api/v1/wishlist",  wishlistRoutes);
+
+// Recommendation routes
+app.use( "/api/v1/personal-recommendations", personalRecommendationRoutes);
+app.use( "/api/v1/recommendations", recommendationRoutes);
+app.use( "/api/v1/related-products", relatedProductRoutes);
+app.use( "/api/v1/history", historyRoutes);
+app.use( "/api/v1/customers-also-bought",  customerRecommendationRoutes);
+app.use( "/api/v1/wishlist", wishlistRoutes);
+
+
 module.exports = app;
